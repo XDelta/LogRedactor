@@ -2,97 +2,97 @@ const redactionString = "<Redacted>";
 
 //
 function locateUsersInfo(lines) {
-    const allNames = new Set();
-    
-    const patterns = [
-        //Catches usernames as well as some user/machine ids
-        /User (?:Joined|Left).*Username:\s*([^,]*),\s*UserID:\s([^,]*),.*?MachineID:\s*(\S+)/i,
+	const allNames = new Set();
+	
+	const patterns = [
+		//Catches usernames as well as some user/machine ids
+		/User (?:Joined|Left).*Username:\s*([^,]*),\s*UserID:\s([^,]*),.*?MachineID:\s*(\S+)/i,
 
-        //Local User SteamID: 76561198044632081
-        /Local User SteamID:\s(\d+)/i,
+		//Local User SteamID: 76561198044632081
+		/Local User SteamID:\s(\d+)/i,
 
-        //Any U-Name or M-hash name
-        /\b([UM]-[A-Za-z0-9-]+)\b/i,
+		//Any U-Name or M-hash name
+		/\b([UM]-[A-Za-z0-9-]+)\b/i,
 
-        //Capture usernames from User Exmaple Role:
-        /User ([^,]+) Role:/i
-    ];
-    for (const line of lines) {
-        for (const pattern of patterns) {
-            const match = line.match(pattern);
+		//Capture usernames from User Exmaple Role:
+		/User ([^,]+) Role:/i
+	];
+	for (const line of lines) {
+		for (const pattern of patterns) {
+			const match = line.match(pattern);
 
-            if (!match) {
-                continue;
-            }
+			if (!match) {
+				continue;
+			}
 
-            for (const value of match.slice(1)) {
-                if (value) {
-                    allNames.add(value);
-                }
-            }
-        }
-    }
+			for (const value of match.slice(1)) {
+				if (value) {
+					allNames.add(value);
+				}
+			}
+		}
+	}
 
-    //Sort names by longest replacements first
-    const allNamesSorted = [...allNames].sort((a, b) => b.length - a.length);
+	//Sort names by longest replacements first
+	const allNamesSorted = [...allNames].sort((a, b) => b.length - a.length);
 
-    return allNamesSorted;
+	return allNamesSorted;
 }
 
 function redactPaths(lines) {
-    const patterns = [
-        // Most normal paths on Windows R:\Program Files\Steam\steamapps\common\Resonite
-        /[A-Z]:[\\/](?:.*?)(?=[\\/]Resonite(?=[\\/]|$))/i,
+	const patterns = [
+		// Most normal paths on Windows R:\Program Files\Steam\steamapps\common\Resonite
+		/[A-Z]:[\\/](?:.*?)(?=[\\/]Resonite(?=[\\/]|$))/i,
 
-        // Windows UNC paths like \\Carthage\Shared\Resonite
-        /\\\\[^\\/]+[\\/](?:.*?)(?=[\\/]Resonite(?=[\\/]|$))/i,
+		// Windows UNC paths like \\Carthage\Shared\Resonite
+		/\\\\[^\\/]+[\\/](?:.*?)(?=[\\/]Resonite(?=[\\/]|$))/i,
 
-        //TODO need more logs from linux/headlesses
-    ];
+		//TODO need more logs from linux/headlesses
+	];
 
-    for (let i = 0; i < lines.length; i++) {
-        for (const pattern of patterns) {
-            lines[i] = lines[i].replace(
-                pattern,
-                redactionString
-            );
-        }
-    }
-    return lines;
+	for (let i = 0; i < lines.length; i++) {
+		for (const pattern of patterns) {
+			lines[i] = lines[i].replace(
+				pattern,
+				redactionString
+			);
+		}
+	}
+	return lines;
 }
 
 function redactNames(lines, allNames) {
 
-    return lines.map(line => {
+	return lines.map(line => {
 
-        for (const name of allNames) {
-            //Skip empty
-            if (!name) {
-                continue;
-            }
+		for (const name of allNames) {
+			//Skip empty
+			if (!name) {
+				continue;
+			}
 
-            const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            const pattern = new RegExp(escaped, "g");
+			const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+			const pattern = new RegExp(escaped, "g");
 
-            line = line.replace(pattern, () => {
-                return redactionString;
-            });
-        }
+			line = line.replace(pattern, () => {
+				return redactionString;
+			});
+		}
 
-        return line;
-    });
+		return line;
+	});
 }
 
 function processLog(text) {
-    let lines = text.split(/\r?\n/);
+	let lines = text.split(/\r?\n/);
 
-    const allNames = locateUsersInfo(lines);
+	const allNames = locateUsersInfo(lines);
 
-    lines = redactPaths(lines);
-    lines = redactNames(lines, allNames);
+	lines = redactPaths(lines);
+	lines = redactNames(lines, allNames);
 
-    return {
-        text: lines.join("\n"),
-        names: [...allNames]
-    };
+	return {
+		text: lines.join("\n"),
+		names: [...allNames]
+	};
 }
