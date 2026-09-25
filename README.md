@@ -8,3 +8,6 @@ Removes most user information from Resonite log files
 - Steam ID
 - Most normal paths on Windows `R:\Program Files\Steam\steamapps\common\Resonite`
 - Also Windows UNC paths like `\\Carthage\Shared\Resonite`
+
+
+Used in https://github.com/Yellow-Dog-Man/feedback.resonite.com
