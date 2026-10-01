@@ -10,4 +10,6 @@ Removes most user information from Resonite log files
 - Also Windows UNC paths like `\\Carthage\Shared\Resonite`
 
 
-Used in https://github.com/Yellow-Dog-Man/feedback.resonite.com
+Used on https://feedback.resonite.com/
+
+https://github.com/Yellow-Dog-Man/feedback.resonite.com
